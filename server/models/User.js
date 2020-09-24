@@ -90,8 +90,22 @@ userSchema.methods.generateToken = function(cb){
         //이 user 정보가 user.generateToken(req.body) 으로 넘어감
     })
 }
+//만약 안되는 부분있으면 오류나는 부분에서 다시 지우고 저장했따가 똑같은거 다시쓰고 저장해봐..혹시나
+userSchema.statics.findByToken = function(token,cb){
+    var user = this;
+    //user._id +'' = token
+    // 토큰을 decode 한다.
+    // decoded 된게 나옴 이건 userid임
+    jwt.verify(token,'secretToken',function(err,decoded){
+        //유저아이디를 이용해서 유저를 찾은 다음에 
+        //클라이언트에서 가져온 token과 db에 보관된 토큰이 일치하는지 확인
 
-
+        user.findOne({"_id":decoded,"token":token},function(err,user){
+            if(err) return cb(err);
+            cb(null, user)
+        })
+    })
+}
 
 const User = mongoose.model('User',userSchema) //스키마를 모델로 감싸줌
-module.exports ={User}//이 모델을 다른파일에서도 쓸수있게 exprot 해줌
+module.exports ={ User }; //이 모델을 다른파일에서도 쓸수있게 exprot 해줌
